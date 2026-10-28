@@ -7,6 +7,7 @@ cannot be deployed, and the labelled screen dataset behind it.
 
 - Live demo: [Deploy Zone Finder on Hugging Face](https://huggingface.co/spaces/nihatxp/coc-deploy-zone-finder)
 - Free dataset sample: [clash-of-clans-screen-segmentation-sample](https://huggingface.co/datasets/nihatxp/clash-of-clans-screen-segmentation-sample)
+- Browse the sample: [Dataset Viewer on Hugging Face](https://huggingface.co/spaces/nihatxp/coc-dataset-viewer)
 
 ## Deploy Zone Finder
 
@@ -16,9 +17,10 @@ screenshot and returns the no-deploy area as a mask, with the boundary traced on
 
 ![Web app](assets/app.png)
 
-It runs entirely in the browser. The model is exported to ONNX and executed with ONNX Runtime Web (WebAssembly), so
-there is no server and the screenshot never leaves the device. A 2400×1080 screenshot takes about half a second on a
-desktop CPU (0.48 to 0.51 s in my runs).
+It runs entirely in the browser. The full model is exported to ONNX and executed with ONNX Runtime Web, on the GPU
+through WebGPU where the browser supports it and on the CPU (WebAssembly) otherwise, so there is no server and the
+screenshot never leaves the device. A 2400×1080 screenshot takes about 1 second with WebGPU (the first run is slower
+while the GPU warms up) and about 3.5 seconds on the CPU, measured on my desktop.
 
 Some details:
 
@@ -40,14 +42,14 @@ The boundary follows the game's tile grid, including the gaps where deployment i
 
 ### Models
 
-| | Light (used on the site) | Full |
+| | Light | Full (used on the site) |
 |---|---|---|
 | Architecture | U-Net, MobileNetV2 encoder | U-Net, EfficientNet-B4 encoder |
 | Output | no-deploy area | no-deploy area + interface |
 | Training screens | 4,674 | 8,824 |
 | IoU, no-deploy area (1,458 validation screens) | 0.987 | 0.996 |
 | Size | 27 MB | 78 MB |
-| Speed | 0.5 s in the browser (CPU), 17 ms on GPU at 640×640 | not used on the site |
+| Speed | 0.5 s in the browser (CPU), 17 ms on GPU at 640×640 | about 1 s in the browser with WebGPU, 3.5 s on the CPU |
 
 The light model runs at 640 px on the long side; the full one at 1280 px. On split-screen frames alone the light model
 scores 0.992.
@@ -60,8 +62,8 @@ The model came out of a larger labelling effort: every object on an attack scree
 
 | | |
 |---|---|
-| Frames | 4,687 |
-| Classes | 1,353 |
+| Frames | 9,000+ (growing every day) |
+| Classes | 1,400+ |
 | Objects per frame | about 760 |
 | Layouts | 2400×1080 and split-screen 1121×978 |
 | Formats | YOLO segmentation and COCO |
@@ -85,8 +87,9 @@ asset always gets the same class name.
 ![Six sample frames](assets/dataset_cover.png)
 
 A six-frame sample with images, YOLO labels, COCO annotations and the full class list is
-[on Hugging Face](https://huggingface.co/datasets/nihatxp/clash-of-clans-screen-segmentation-sample). The full dataset
-is available on request.
+[on Hugging Face](https://huggingface.co/datasets/nihatxp/clash-of-clans-screen-segmentation-sample), and every
+label can be browsed in the [Dataset Viewer](https://huggingface.co/spaces/nihatxp/coc-dataset-viewer). The full
+dataset is available on request.
 
 ## Stack
 
